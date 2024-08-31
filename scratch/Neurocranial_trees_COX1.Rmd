@@ -1,0 +1,127 @@
+---
+title: "Neurocranial trees COX1"
+format: html
+editor: visual
+---
+
+# Mapping Neurocranial traits to phylogeny
+
+Data from [Castro et al. 2020](https://www.journals.uchicago.edu/doi/full/10.1086/688017#_i5) 
+
+Carried out by Eric Witte & Ambrosio Rivera
+
+## Load Packages
+
+```{r}
+##Load Packages
+library(ape)
+library(ggtree)
+library(here)
+library(phytools)
+library(readxl)
+library(tidyverse)
+```
+
+## Loading Muraenid tree
+
+```{r}
+##Muraenid tree (Generated from Genbank accessions)
+mtree <- read.tree(here("data/COX1_Neurocranial_morph.nex"))
+plot(mtree)
+
+```
+
+#replace names
+```{r}
+acc_desc_gb <- entrez_fetch(db = "nucleotide", id = tiplabels, rettype = "gb", retmode = "text")
+orgs <- rentrez::gb_extract(record = acc_desc_gb, what = 'organism') %>% gsub(" ", "_")
+
+```
+
+
+Matching the data and pruning the tree
+
+```{r}
+rat_edit <- read.csv(here("data/rat_edit.csv"))
+rat_dat <- readxl::read_excel(here("data/TableS1.xlsx"))
+#Defining the tree tips
+tip <- rat_edit$rat_spec
+
+#plotting the tree
+plot(keep.tip(sqtree, tip))
+
+#Checking whether rat_spec species are the same as in tip labels
+#tibble(rat_spec = spec,
+ #      in_tree = rat_spec %in% sqtree$tip.label) %>% 
+  #view()
+
+```
+
+# Means of vibration rate and duration
+
+```{r}
+# eliminate NA, calculate the mean "Tail vibration rate (Max, Hz)" in rat_dat for each species, species name not in _
+
+vib_mean <- rat_dat %>%
+  drop_na(`Tail vibration rate (Max, Hz)`) %>% 
+  group_by(Species)%>%
+  summarize(mean_rate = mean(`Tail vibration rate (Max, Hz)`),
+            .groups = "drop")
+
+# view(vib_mean_rate)
+vib_mean$Species <- gsub(" ", "_", vib_mean$Species)
+
+rat_edit_vib <- rat_edit %>% 
+  left_join(vib_mean, by = c(rat_spec = "Species")) %>% 
+  drop_na()
+# eliminate NA, calculate the mean "Tail vibration duration (Max, sec.)" in rat_dat for each species, species name not in _
+
+dur_mean <- rat_dat %>%
+  drop_na(`Tail vibration duration (Max, sec.)`) %>% 
+  group_by(Species)%>%
+  summarize(mean_rate = mean(`Tail vibration duration (Max, sec.)`),
+            .groups = "drop")
+
+#add underscores
+dur_mean$Species <- gsub(" ", "_", dur_mean$Species)
+
+# view(dur_mean_rate)
+
+#check ?str_replace to change spaces into _ in each tibble
+
+rat_edit_dur <- rat_edit %>% 
+  left_join(dur_mean, by = c(rat_spec = "Species")) %>% 
+  drop_na()
+
+#rat_edit %>% 
+ # left_join(vib_mean_rate, by = c(rat_spec = "Species"))
+```
+
+## Plotting Color Ramp Tree For Vibration Duration (Seconds)
+
+```{r}
+tip<- rat_edit_dur$rat_spec
+
+pruned_tree <- keep.tip(sqtree, tip)
+
+rat_dur <- rat_edit_dur$mean_rate
+names(rat_dur) <- rat_edit_dur$rat_spec
+
+obj<-contMap(pruned_tree, rat_rate, plot=FALSE)
+
+plot( setMap(obj, invert = TRUE), fsize=c(0.7,1), leg.txt = "duration of vibration (seconds)", lwd = 3)
+
+```
+
+```{r}
+tip<- rat_edit_vib$rat_spec
+
+pruned_tree <- keep.tip(sqtree, tip)
+
+rat_vib <- rat_edit_vib$mean_rate
+names(rat_vib) <- rat_edit_vib$rat_spec
+
+obj<-contMap(pruned_tree, rat_vib, plot=FALSE)
+
+plot( setMap(obj, invert = TRUE), fsize=c(0.7,1), leg.txt = "rate of vibration (Hz)", lwd = 3)
+```
