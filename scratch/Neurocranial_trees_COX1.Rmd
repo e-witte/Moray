@@ -20,6 +20,7 @@ library(here)
 library(phytools)
 library(readxl)
 library(tidyverse)
+library(restez)
 ```
 
 ## Loading Muraenid tree
@@ -27,14 +28,21 @@ library(tidyverse)
 ```{r}
 ##Muraenid tree (Generated from Genbank accessions)
 mtree <- read.tree(here("data/COX1_Neurocranial_morph.nex"))
-plot(mtree)
+plot(mtree$`treeconsensus=`)
 
 ```
 
 #replace names
 ```{r}
-acc_desc_gb <- entrez_fetch(db = "nucleotide", id = tiplabels, rettype = "gb", retmode = "text")
-orgs <- rentrez::gb_extract(record = acc_desc_gb, what = 'organism') %>% gsub(" ", "_")
+mtree_tip_acc <- mtree$`treeconsensus=`$tip.label
+
+sp_name<- 1: length(mtree_tip_acc)
+
+for(i in 1:length(mtree_tip_acc)) { 
+  sp_name[i] <- org_name(mtree_tip_acc[i])}
+
+
+acc_match <- data.frame(mtree_tip_acc, sp_name)
 
 ```
 
@@ -42,13 +50,14 @@ orgs <- rentrez::gb_extract(record = acc_desc_gb, what = 'organism') %>% gsub(" 
 Matching the data and pruning the tree
 
 ```{r}
-rat_edit <- read.csv(here("data/rat_edit.csv"))
-rat_dat <- readxl::read_excel(here("data/TableS1.xlsx"))
+cran_dat <- readxl::read_excel(here("data/Neurocranium_morphology_Taiwan_Muraenidae (1).xlsx"))
+view(cran_dat)
+
 #Defining the tree tips
-tip <- rat_edit$rat_spec
+#tip <- rat_edit$rat_spec
 
 #plotting the tree
-plot(keep.tip(sqtree, tip))
+#plot(keep.tip(sqtree, tip))
 
 #Checking whether rat_spec species are the same as in tip labels
 #tibble(rat_spec = spec,
