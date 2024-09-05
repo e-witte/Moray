@@ -71,7 +71,11 @@ Matching the data and pruning the tree
 
 ```{r}
 cran_dat <- readxl::read_excel(here("data/Neurocranium_morphology_Taiwan_Muraenidae (1).xlsx"))
+
+names(cran_dat) <- cran_dat$Species
+
 view(cran_dat)
+
 
 #Defining the tree tips
 #tip <- rat_edit$rat_spec
@@ -136,21 +140,20 @@ rat_edit_dur <- rat_edit %>%
 #rat_dur <- rat_edit_dur$mean_rate
 #names(rat_dur) <- rat_edit_dur$rat_spec
 
-obj<-contMap(otree, cran_dat$NCL_NCW, plot=FALSE)
+phy_dat <- 1:length(otree$tip.label)
 
-plot( setMap(obj, invert = TRUE), fsize=c(0.7,1), leg.txt = "duration of vibration (seconds)", lwd = 3)
+names(phy_dat)<- otree$tip.label
 
-```
+for(k in 1:length(phy_dat)) {
+  for(l in 1:nrow(cran_dat)){
+    if(names(phy_dat)[k]==cran_dat$Species[l]){
+      phy_dat[k]<- cran_dat$NCL_NCW[l]
+    }
+  }
+}
 
-```{r}
-tip<- rat_edit_vib$rat_spec
+obj<-contMap(otree, phy_dat, plot=FALSE)
 
-pruned_tree <- keep.tip(sqtree, tip)
+plot( setMap(obj, invert = TRUE), fsize=c(0.7,1), leg.txt = "NCL_NCW", lwd = 3)
 
-rat_vib <- rat_edit_vib$mean_rate
-names(rat_vib) <- rat_edit_vib$rat_spec
-
-obj<-contMap(pruned_tree, rat_vib, plot=FALSE)
-
-plot( setMap(obj, invert = TRUE), fsize=c(0.7,1), leg.txt = "rate of vibration (Hz)", lwd = 3)
 ```
