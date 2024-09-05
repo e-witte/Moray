@@ -28,21 +28,41 @@ library(restez)
 ```{r}
 ##Muraenid tree (Generated from Genbank accessions)
 mtree <- read.tree(here("data/COX1_Neurocranial_morph.nex"))
-plot(mtree$`treeconsensus=`)
+
+ntree<- mtree$`treeconsensus=`
+
+plot(ntree)
 
 ```
 
 #replace names
 ```{r}
-mtree_tip_acc <- mtree$`treeconsensus=`$tip.label
+ntree_tip_acc <- ntree$tip.label
 
-sp_name<- 1: length(mtree_tip_acc)
+sp_name<- 1: length(ntree_tip_acc)
 
-for(i in 1:length(mtree_tip_acc)) { 
-  sp_name[i] <- org_name(mtree_tip_acc[i])}
+for(i in 1:length(ntree_tip_acc)) { 
+  sp_name[i] <- org_name(ntree_tip_acc[i])}
 
 
-acc_match <- data.frame(mtree_tip_acc, sp_name)
+acc_match <- data.frame(ntree_tip_acc, sp_name)
+
+
+for(j in 1:length(ntree$tip.label)) {
+  for(k in 1:nrow(acc_match)){
+    if(ntree$tip.label[j]==acc_match[k,1]){
+      ntree$tip.label[j] <- acc_match[k,2]
+}
+  }
+}
+
+plot(ntree)
+
+#keep unique
+otree<- keep.tip(ntree, unique(ntree$tip.label))
+
+plot(otree)
+
 
 ```
 
@@ -109,14 +129,14 @@ rat_edit_dur <- rat_edit %>%
 ## Plotting Color Ramp Tree For Vibration Duration (Seconds)
 
 ```{r}
-tip<- rat_edit_dur$rat_spec
+#tip<- rat_edit_dur$rat_spec
 
-pruned_tree <- keep.tip(sqtree, tip)
+#pruned_tree <- keep.tip(sqtree, tip)
 
-rat_dur <- rat_edit_dur$mean_rate
-names(rat_dur) <- rat_edit_dur$rat_spec
+#rat_dur <- rat_edit_dur$mean_rate
+#names(rat_dur) <- rat_edit_dur$rat_spec
 
-obj<-contMap(pruned_tree, rat_rate, plot=FALSE)
+obj<-contMap(otree, cran_dat$NCL_NCW, plot=FALSE)
 
 plot( setMap(obj, invert = TRUE), fsize=c(0.7,1), leg.txt = "duration of vibration (seconds)", lwd = 3)
 
