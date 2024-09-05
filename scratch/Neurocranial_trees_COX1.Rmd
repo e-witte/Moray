@@ -150,7 +150,7 @@ for(k in 1:length(phy_dat)) {
       phy_dat[k]<- cran_dat$NCL_NCW[l]
     }
   }
-}
+} #add your variable here
 
 obj<-contMap(otree, phy_dat, plot=FALSE)
 
