@@ -72,21 +72,9 @@ Matching the data and pruning the tree
 ```{r}
 cran_dat <- readxl::read_excel(here("data/Neurocranium_morphology_Taiwan_Muraenidae (1).xlsx"))
 
-names(cran_dat) <- cran_dat$Species
+row.names(cran_dat) <- cran_dat$Species
 
 view(cran_dat)
-
-
-#Defining the tree tips
-#tip <- rat_edit$rat_spec
-
-#plotting the tree
-#plot(keep.tip(sqtree, tip))
-
-#Checking whether rat_spec species are the same as in tip labels
-#tibble(rat_spec = spec,
- #      in_tree = rat_spec %in% sqtree$tip.label) %>% 
-  #view()
 
 ```
 
@@ -147,13 +135,13 @@ names(phy_dat)<- otree$tip.label
 for(k in 1:length(phy_dat)) {
   for(l in 1:nrow(cran_dat)){
     if(names(phy_dat)[k]==cran_dat$Species[l]){
-      phy_dat[k]<- cran_dat$NCL_NCW[l]
+      phy_dat[k]<- cran_dat$NCL_OBL[l]          #EDIT
     }
   }
 } #add your variable here
 
 obj<-contMap(otree, phy_dat, plot=FALSE)
 
-plot( setMap(obj, invert = TRUE), fsize=c(0.7,1), leg.txt = "NCL_NCW", lwd = 3)
+plot( setMap(obj, invert = TRUE), fsize=c(0.7,1), leg.txt = "NCL_OBL", lwd = 3) #EDIT
 
 ```
